@@ -1,104 +1,103 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+
 const { Document, Packer, Paragraph, HeadingLevel, TextRun } = require('docx');
-const { JSDOM } = require('jsdom'); // ✅ Importar jsdom
 const db = require('../db');
 
 const router = express.Router();
 
-async function obtenerSecciones() {
-  const [rows] = await db.query('SELECT * FROM secciones ORDER BY orden ASC');
-  return rows;
-}
 
-// Generar número jerárquico recursivamente
-function generarNumeracion(seccion, todas) {
-  const camino = [];
-  let actual = seccion;
-
-  while (actual.id_padre) {
-    const padre = todas.find(s => s.id === actual.id_padre);
-    if (!padre) break;
-    camino.unshift(padre);
-    actual = padre;
-  }
-
-  const indices = camino.map(p => {
-    const hijos = todas
-      .filter(s => s.id_padre === p.id)
-      .sort((a, b) => a.orden - b.orden);
-    return hijos.findIndex(s => s.id === camino[camino.indexOf(p) + 1]) + 1;
-  });
-
-  const hermanos = todas
-    .filter(s => s.id_padre === seccion.id_padre)
-    .sort((a, b) => a.orden - b.orden);
-
-  const miPos = hermanos.findIndex(s => s.id === seccion.id) + 1;
-  indices.push(miPos);
-
-  return indices.join('.') + '.';
+function limpiarHtml(htmlString) {
+    if (!htmlString) return '';
+    
+    return htmlString.replace(/<p>/gi, '\n').replace(/<\/p>/gi, '').replace(/<br\s*\/?>/gi, '\n').replace(/&nbsp;/gi, ' ').replace(/<[^>]+>/g, '').trim();
 }
 
 router.get('/', async (req, res) => {
   try {
-    const secciones = await obtenerSecciones();
-    const children = [];
+    const [capitulos] = await db.query('SELECT * FROM capitulos ORDER BY orden');
+    const docChildren = []; 
 
-    for (const seccion of secciones) {
-      const numeracion = generarNumeracion(seccion, secciones);
-      const titulo = `${numeracion} ${seccion.titulo}`;
+    for (const [i, cap] of capitulos.entries()) {
+      const capNum = `${i + 1}`;
+      //Añadir Título del Capítulo
+      docChildren.push(new Paragraph({
+        text: `${capNum}. ${cap.titulo}`,
+        heading: HeadingLevel.HEADING_1,
+        spacing: { after: 200 }
+      }));
 
-      // Agregar el título jerárquico
-      children.push(
-        new Paragraph({
-          text: titulo,
-          heading: HeadingLevel[`HEADING_${Math.min(seccion.nivel + 1, 6)}`],
-          spacing: { after: 200 },
-        })
-      );
+      //Añadir Contenido del Capítulo
+      if (cap.contenido) {
+        const textoLimpio = limpiarHtml(cap.contenido);
+        docChildren.push(new Paragraph({ text: textoLimpio, spacing: { after: 200 } }));
+      }
 
-      // Convertir HTML a texto plano
-      const contenidoHTML = seccion.contenido?.trim() || '';
-      const dom = new JSDOM(contenidoHTML);
-      const textoPlano = dom.window.document.body.textContent?.trim() || '[Contenido vacío]';
+      //Obtener y procesar Secciones
+      const [secciones] = await db.query('SELECT * FROM secciones WHERE capitulo_id = ? ORDER BY orden', [cap.id]);
+      for (const [j, sec] of secciones.entries()) {
+        const secNum = `${capNum}.${j + 1}`;
+        //Añadir Título de la Sección
+        docChildren.push(new Paragraph({
+          text: `${secNum} ${sec.titulo}`,
+          heading: HeadingLevel.HEADING_2,
+          spacing: { after: 200 }
+        }));
+        
+        //Añadir Contenido de la Sección
+        if (sec.contenido) {
+          const textoLimpio = limpiarHtml(sec.contenido);
+          docChildren.push(new Paragraph({ text: textoLimpio, spacing: { after: 200 } }));
+        }
 
-      children.push(
-        new Paragraph({
-          children: [new TextRun(textoPlano)],
-          spacing: { after: 200 },
-        })
-      );
+      
+
+        //Obtener y procesar Subsecciones
+        const [subsecciones] = await db.query('SELECT * FROM subsecciones WHERE seccion_id = ? ORDER BY orden', [sec.id]);
+        for (const [k, sub] of subsecciones.entries()) {
+          const subNum = `${secNum}.${k + 1}`;
+          // Añadir Título de la Subsección 
+          docChildren.push(new Paragraph({
+            text: `${subNum} ${sub.titulo}`,
+            heading: HeadingLevel.HEADING_3,
+            spacing: { after: 200 }
+          }));
+          
+          //Añadir Contenido de la Subsección 
+          if (sub.contenido) {
+            const textoLimpio = limpiarHtml(sub.contenido);
+            docChildren.push(new Paragraph({ text: textoLimpio, spacing: { after: 200 } }));
+          }
+
+          
+        }
+      }
     }
 
-    // Crear el documento
+    // Crear y enviar el documento
     const doc = new Document({
       creator: 'SGR System',
-      title: 'Reporte generado',
-      description: 'Documento generado automáticamente',
-      sections: [{ properties: {}, children }],
+      title: 'Reporte Trimestral',
+      sections: [{ children: docChildren }]
     });
 
     const buffer = await Packer.toBuffer(doc);
     const fileName = `reporte_${Date.now()}.docx`;
-    const filePath = path.join(__dirname, '..', 'exports', fileName);
 
-    if (!fs.existsSync(path.dirname(filePath))) {
-      fs.mkdirSync(path.dirname(filePath), { recursive: true });
-    }
+    // Enviar el archivo directamente como buffer, sin guardarlo en el disco
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+    res.type('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+    res.send(buffer);
 
-    fs.writeFileSync(filePath, buffer);
-
-    res.download(filePath, fileName, err => {
-      if (err) console.error('Error al descargar:', err);
-      else fs.unlink(filePath, err => err && console.error('Error al borrar:', err));
-    });
-  } catch (error) {
-    console.error('Error al exportar documento:', error);
+  } catch (err) {
+    console.error('Error generando documento:', err);
     res.status(500).json({ error: 'No se pudo generar el documento' });
   }
 });
 
 module.exports = router;
+
+
+
 

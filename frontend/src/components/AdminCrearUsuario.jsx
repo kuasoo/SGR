@@ -1,72 +1,81 @@
 // components/AdminCrearUsuario.jsx
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify'; // Usamos toast para mejores notificaciones
 
 function AdminCrearUsuario() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('colaborador');
-  const [secciones, setSecciones] = useState([]);
-  const [seleccionadas, setSeleccionadas] = useState([]);
+  // Se han eliminado los estados 'secciones' y 'seleccionadas'
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    axios.get('http://localhost:3001/api/secciones', {
-      headers: { Authorization: `Bearer ${token}` }
-    }).then(res => setSecciones(res.data));
-  }, []);
+  // Se ha eliminado el useEffect que cargaba las secciones
 
-  const toggleSeccion = (id) => {
-    setSeleccionadas(prev =>
-      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
-    );
-  };
+  // Se ha eliminado la función toggleSeccion
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
+      // El payload ya no incluye el array de secciones
       await axios.post('http://localhost:3001/api/usuarios/crear', {
         username,
         password,
         rol,
-        secciones: seleccionadas
       }, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      alert('Usuario creado');
+      
+      toast.success(`Usuario '${username}' creado con éxito.`); // Notificación mejorada
+      
+      // Limpiar el formulario
       setUsername('');
       setPassword('');
-      setSeleccionadas([]);
+      setRol('colaborador');
     } catch (err) {
-      alert('Error al crear usuario');
+      const errorMsg = err.response?.data?.error || 'Error al crear usuario';
+      toast.error(errorMsg); // Notificación de error mejorada
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 border rounded bg-white shadow">
-      <h2 className="text-lg font-bold mb-2">Crear usuario</h2>
-      <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Usuario" required className="input" />
-      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" required className="input" />
-      <select value={rol} onChange={e => setRol(e.target.value)} className="input">
-        <option value="colaborador">Colaborador</option>
-        <option value="admin">Administrador</option>
-      </select>
-
-      <h3 className="mt-3 mb-1 font-semibold">Secciones asignadas:</h3>
-      <div className="max-h-40 overflow-y-auto border p-2 rounded">
-        {secciones.map(sec => (
-          <label key={sec.id} className="block text-sm">
-            <input
-              type="checkbox"
-              checked={seleccionadas.includes(sec.id)}
-              onChange={() => toggleSeccion(sec.id)}
-            /> {sec.numero} - {sec.titulo}
-          </label>
-        ))}
+    <form onSubmit={handleSubmit} className="p-4 border rounded-lg bg-white shadow-sm">
+      <h2 className="text-xl font-bold mb-4">Crear Nuevo Usuario</h2>
+      
+      <div className="space-y-3">
+        <input 
+          value={username} 
+          onChange={e => setUsername(e.target.value)} 
+          placeholder="Nombre de usuario" 
+          required 
+          className="input w-full p-2 border rounded" 
+        />
+        <input 
+          type="password" 
+          value={password} 
+          onChange={e => setPassword(e.target.value)} 
+          placeholder="Contraseña" 
+          required 
+          className="input w-full p-2 border rounded" 
+        />
+        <select 
+          value={rol} 
+          onChange={e => setRol(e.target.value)} 
+          className="input w-full p-2 border rounded bg-white"
+        >
+          <option value="colaborador">Colaborador</option>
+          <option value="admin">Administrador</option>
+        </select>
       </div>
 
-      <button type="submit" className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Crear</button>
+      {/* Se ha eliminado todo el bloque de checkboxes de las secciones */}
+
+      <button 
+        type="submit" 
+        className="mt-4 bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+      >
+        Crear Usuario
+      </button>
     </form>
   );
 }

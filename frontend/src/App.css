@@ -129,6 +129,7 @@ button:hover {
   }
 }
 
+
 li {
   animation: fadeSlideUp 0.3s ease forwards;
   transition: background 0.2s, box-shadow 0.2s;
@@ -173,17 +174,19 @@ li.dragging {
   animation: fadeSlideUp 0.4s ease both;
 }
 
-/* === INDEX TREE === */
+/* === Arborl === */
 ul {
   list-style: none;
   padding-left: 0;
   margin: 0;
+  
 }
 
 ul ul {
   margin-left: 1rem;
   border-left: 2px solid #e5e7eb;
   padding-left: 1rem;
+  
 }
 
 li button {

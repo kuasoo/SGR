@@ -30,4 +30,34 @@ router.post('/crear', async (req, res) => {
   }
 });
 
+
+//obtener usuarios
+router.get('/', async (req, res) => {
+    try {
+      
+        const [usuarios] = await db.query('SELECT id, username, rol FROM usuarios');
+        res.json(usuarios);
+    } catch (err) {
+        console.error("Error al obtener usuarios:", err);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+
+//eliminar usuarios
+router.delete('/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const [result] = await db.query('DELETE FROM usuarios WHERE id = ?', [id]);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado.' });
+        }
+        res.json({ success: true, message: 'Usuario eliminado con éxito.' });
+    } catch (err) {
+        console.error("Error al eliminar usuario:", err);
+        res.status(500).json({ error: 'Error interno del servidor.' });
+    }
+});
+
+
 module.exports = router;

@@ -3,31 +3,30 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// Obtener capítulos con sus secciones y subsecciones
 router.get('/', async (req, res) => {
   try {
-    const [capitulos] = await db.query('SELECT * FROM capitulos ORDER BY orden');
-    const [secciones] = await db.query('SELECT * FROM secciones ORDER BY orden');
-    const [subsecciones] = await db.query('SELECT * FROM subsecciones ORDER BY orden');
+    // 1. Obtener todos los elementos de las 3 tablas, añadiendo el 'tipo'
+    const [capitulos] = await db.query("SELECT *, 'capitulo' as tipo FROM capitulos ORDER BY orden, id");
+    const [secciones] = await db.query("SELECT *, 'seccion' as tipo FROM secciones ORDER BY orden, id");
+    const [subsecciones] = await db.query("SELECT *, 'subseccion' as tipo FROM subsecciones ORDER BY orden, id");
 
-    const estructura = capitulos.map(cap => ({
-      ...cap,
-      tipo: 'capitulo',
-      children: secciones
-        .filter(sec => sec.capitulo_id === cap.id)
-        .map(sec => ({
-          ...sec,
-          tipo: 'seccion',
-          children: subsecciones
-            .filter(sub => sub.seccion_id === sec.id)
-            .map(sub => ({ ...sub, tipo: 'subseccion' }))
-        }))
+    // 2. Anidar subsecciones dentro de sus secciones
+    const seccionesConHijos = secciones.map(seccion => ({
+      ...seccion,
+      children: subsecciones.filter(sub => sub.seccion_id === seccion.id)
     }));
 
-    res.json(estructura);
-  } catch (error) {
-    console.error('Error al cargar contenido estructurado:', error);
-    res.status(500).json({ error: 'Error al cargar estructura' });
+    // 3. Anidar secciones dentro de sus capítulos
+    const arbolCompleto = capitulos.map(capitulo => ({
+      ...capitulo,
+      children: seccionesConHijos.filter(sec => sec.capitulo_id === capitulo.id)
+    }));
+    
+    // 4. Enviar el árbol JSON completo
+    res.json(arbolCompleto);
+  } catch (err) {
+    console.error("Error al construir el contenido anidado:", err);
+    res.status(500).json({ error: "Error interno al obtener el contenido." });
   }
 });
 

@@ -22,6 +22,7 @@ const usuariosRoutes = require('./routes/usuarios');
 
 
 
+
 // Rutas principales sin verificación de 
 app.use('/api/estructura', estructuraRoutes);
 app.use('/api/capitulos', capitulosRoutes);
@@ -32,6 +33,8 @@ app.use('/api/exportar-docx', exportarDocxRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/uploads', uploadsRoutes);
 app.use('/api/usuarios', usuariosRoutes);
+app.use('/api/elementos', require('./routes/elementos'));
+app.use('/api/usuarios', require('./routes/usuarios'));
 
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
