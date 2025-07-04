@@ -1,23 +1,19 @@
 // components/AdminCrearUsuario.jsx
 import { useState } from 'react';
 import axios from 'axios';
-import { toast } from 'react-toastify'; // Usamos toast para mejores notificaciones
+import { toast } from 'react-toastify'; 
 
 function AdminCrearUsuario() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [rol, setRol] = useState('colaborador');
-  // Se han eliminado los estados 'secciones' y 'seleccionadas'
 
-  // Se ha eliminado el useEffect que cargaba las secciones
-
-  // Se ha eliminado la función toggleSeccion
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const token = localStorage.getItem('token');
     try {
-      // El payload ya no incluye el array de secciones
+      
       await axios.post('http://localhost:3001/api/usuarios/crear', {
         username,
         password,
@@ -26,15 +22,15 @@ function AdminCrearUsuario() {
         headers: { Authorization: `Bearer ${token}` }
       });
       
-      toast.success(`Usuario '${username}' creado con éxito.`); // Notificación mejorada
+      toast.success(`Usuario '${username}' creado con éxito.`); 
       
-      // Limpiar el formulario
+      
       setUsername('');
       setPassword('');
       setRol('colaborador');
     } catch (err) {
       const errorMsg = err.response?.data?.error || 'Error al crear usuario';
-      toast.error(errorMsg); // Notificación de error mejorada
+      toast.error(errorMsg); 
     }
   };
 
@@ -68,7 +64,7 @@ function AdminCrearUsuario() {
         </select>
       </div>
 
-      {/* Se ha eliminado todo el bloque de checkboxes de las secciones */}
+      {}
 
       <button 
         type="submit" 

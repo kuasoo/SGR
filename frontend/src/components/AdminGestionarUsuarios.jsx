@@ -7,7 +7,7 @@ import { FaTrash } from 'react-icons/fa';
 const AdminGestionarUsuarios = () => {
   const [usuarios, setUsuarios] = useState([]);
 
-  // Función para cargar los usuarios desde el backend
+  
   const fetchUsers = () => {
     const token = localStorage.getItem('token');
     axios.get('http://localhost:3001/api/usuarios', {
@@ -17,7 +17,7 @@ const AdminGestionarUsuarios = () => {
     .catch(() => toast.error("Error al cargar la lista de usuarios."));
   };
 
-  // Cargar usuarios cuando el componente se monta por primera vez
+  
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -33,7 +33,7 @@ const AdminGestionarUsuarios = () => {
     })
     .then(() => {
       toast.success(`Usuario '${username}' eliminado.`);
-      // Refrescar la lista de usuarios para ver el cambio
+      
       fetchUsers(); 
     })
     .catch(err => {

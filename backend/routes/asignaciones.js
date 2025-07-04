@@ -19,7 +19,7 @@ router.get('/', verificarToken, async (req, res) => {
   }
 });
 
-// 👉 NUEVO: Asignar secciones a un colaborador
+
 router.post('/asignar', verificarToken, async (req, res) => {
   const { usuario_id, secciones } = req.body;
 

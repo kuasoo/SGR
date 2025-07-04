@@ -30,7 +30,7 @@ router.post('/', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
-    // Esto borra la sección. También deberías borrar sus subsecciones asociadas.
+    
     await db.query('DELETE FROM subsecciones WHERE seccion_id = ?', [id]);
     await db.query('DELETE FROM secciones WHERE id = ?', [id]);
     res.json({ success: true, message: 'Sección y sus subsecciones eliminadas' });

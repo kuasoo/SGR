@@ -10,7 +10,6 @@ import ModalCrearElemento from './components/ModalCrearElemento';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ConfirmModal from './components/ConfirmModal';
-// --- PASO 1: IMPORTAR EL NUEVO COMPONENTE ---
 import AdminGestionarUsuarios from './components/AdminGestionarUsuarios';
 
 
@@ -271,7 +270,7 @@ function App() {
         </div>
       </div>
       <div className="p-6">
-        {/* --- PASO 2: RENDERIZAR EL PANEL DE ADMINISTRACIÓN COMPLETO --- */}
+        {}
         {usuario?.rol === 'admin' && ( 
           <div className="my-8 p-4 bg-gray-100 rounded-lg shadow-inner">
             <h1 className="text-2xl font-bold mb-6 text-center text-gray-700">Panel de Administrador</h1>

@@ -23,7 +23,7 @@ const usuariosRoutes = require('./routes/usuarios');
 
 
 
-// Rutas principales sin verificación de 
+// Rutas principales
 app.use('/api/estructura', estructuraRoutes);
 app.use('/api/capitulos', capitulosRoutes);
 app.use('/api/secciones', seccionesRoutes);

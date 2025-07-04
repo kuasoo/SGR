@@ -55,7 +55,7 @@ async function generarDocumentoWord() {
 
   buildDoc(secciones);
 
-  // 👇 Ahora creamos el documento y le pasamos el children ya listo
+  
   const doc = new Document({
     creator: "SGR Luis",
     title: "Reporte Generado",

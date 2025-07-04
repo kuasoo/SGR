@@ -8,7 +8,7 @@ const ConfirmModal = ({ isOpen, message, onConfirm, onCancel }) => {
   }
 
   return (
-    // Contenedor principal del modal que ocupa toda la pantalla
+    
     <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 2000 }}>
       
       {/* Caja de diálogo */}

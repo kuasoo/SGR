@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
-// Ruta para CREAR elementos con lógica de ordenamiento
+
 router.post('/', async (req, res) => {
   const { tipo, titulo, parentId, orden } = req.body;
   const nuevoOrden = orden ? parseInt(orden, 10) : null;
@@ -26,16 +26,16 @@ router.post('/', async (req, res) => {
     await connection.beginTransaction();
 
     let finalOrden;
-    const whereClause = parentColumn ? `WHERE ${parentColumn} = ?` : 'WHERE 1=1'; // WHERE 1=1 para capítulos que no tienen padre
+    const whereClause = parentColumn ? `WHERE ${parentColumn} = ?` : 'WHERE 1=1'; 
     const whereParams = parentColumn ? [parentId] : [];
 
-    if (nuevoOrden) { // Escenario 2: Insertar en una posición específica
+    if (nuevoOrden) { 
       finalOrden = nuevoOrden;
-      // Desplazar los elementos existentes
+      
       const updateQuery = `UPDATE ?? SET orden = orden + 1 WHERE ${parentColumn ? `${parentColumn} = ? AND` : ''} orden >= ? ORDER BY orden DESC`;
       const updateParams = parentColumn ? [tableName, parentId, finalOrden] : [tableName, finalOrden];
       
-      // La lógica de los parámetros debe ser ajustada para no tener undefined
+      
       const finalUpdateParams = parentColumn ? [tableName, parentId, finalOrden] : [tableName, finalOrden];
       if (parentColumn) {
           await connection.query(`UPDATE ?? SET orden = orden + 1 WHERE ${parentColumn} = ? AND orden >= ? ORDER BY orden DESC`, [tableName, parentId, finalOrden]);
@@ -43,12 +43,12 @@ router.post('/', async (req, res) => {
           await connection.query(`UPDATE ?? SET orden = orden + 1 WHERE orden >= ? ORDER BY orden DESC`, [tableName, finalOrden]);
       }
 
-    } else { // Escenario 1: Añadir al final
+    } else { 
       const [rows] = await connection.query(`SELECT MAX(orden) as maxOrden FROM ?? ${whereClause}`, [tableName, ...whereParams]);
       finalOrden = (rows[0].maxOrden === null) ? 1 : rows[0].maxOrden + 1;
     }
 
-    // Insertar el nuevo elemento en su posición final
+    
     const insertQuery = parentColumn 
       ? `INSERT INTO ?? (titulo, ${parentColumn}, orden, numero) VALUES (?, ?, ?, ?)`
       : `INSERT INTO ?? (titulo, orden, numero) VALUES (?, ?, ?)`;

@@ -19,7 +19,7 @@ const ModalCrearElemento = ({ config, onClose, onSubmit }) => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (titulo) {
-      // Enviamos el título y el orden
+      
       onSubmit({ titulo, orden });
     }
   };
