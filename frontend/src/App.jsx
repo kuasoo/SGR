@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { Editor } from '@tinymce/tinymce-react';
 import Login from './login';
-import './app.css';
+import './App.css';
 import { FaEdit, FaSave, FaTrash, FaPlus, FaEllipsisV, FaSyncAlt } from "react-icons/fa";
 import { MdCancel } from "react-icons/md";
 import AdminCrearUsuario from './components/AdminCrearUsuario';
